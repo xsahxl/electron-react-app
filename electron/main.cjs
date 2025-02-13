@@ -8,7 +8,7 @@ const COOKIE_PATH = path.join(app.getPath('userData'), 'cook.json')
 function createWindow() {
   const win = new BrowserWindow({
     width: 1200,
-    height: 800,
+    height: 600,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
