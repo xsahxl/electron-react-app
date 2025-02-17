@@ -3,7 +3,32 @@ const path = require('path')
 const fs = require('fs')
 
 // Cookie存储路径
-const COOKIE_PATH = path.join(app.getPath('userData'), 'cook.json')
+const COOKIE_PATH = path.join(__dirname, 'cookie.json')
+
+function mapSameSite(sameSite) {
+  switch (sameSite) {
+    case 'no_restriction':
+      return 'None';
+    case 'lax':
+      return 'Lax';
+    case 'strict':
+      return 'Strict';
+    default:
+      return 'Lax'; // 默认值为 'Lax'
+  }
+}
+
+async function saveCookies() {
+  try {
+    const cookies = await session.defaultSession.cookies.get({ url: 'https://creator.xiaohongshu.com' });
+    const transformedCookies = cookies.map(o => ({ ...o, sameSite: mapSameSite(o.sameSite) }))
+    const cookieJson = JSON.stringify(transformedCookies, null, 2)
+    fs.writeFileSync(COOKIE_PATH, cookieJson)
+    console.log('Cookies saved successfully');
+  } catch (error) {
+    console.error('Failed to save cookies:', error)
+  }
+}
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -14,42 +39,10 @@ function createWindow() {
       contextIsolation: false,
     },
   })
-
-  // 获取当前session
-  const ses = win.webContents.session
-
-  // 监听Cookie变化
-  ses.cookies.on('changed', async (event) => {
-    await saveCookies(ses)
-  })
-
-  // 加载抖音创作平台
-  win.loadURL('https://creator.xiaohongshu.com')
-
-  // 窗口关闭时保存最后状态
-  win.on('closed', async () => {
-    await saveCookies(ses)
-  })
+  win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
+  saveCookies()
 }
 
-
-// 保存Cookie到文件的函数
-async function saveCookies(ses) {
-  try {
-    // 获取所有抖音相关的Cookie
-    const cookies = await ses.cookies.get({
-      url: 'https://creator.xiaohongshu.com'
-    })
-
-    // 转换为JSON格式并保存
-    const cookieJson = JSON.stringify(cookies, null, 2)
-    fs.writeFileSync(COOKIE_PATH, cookieJson)
-
-    console.log('Cookies saved successfully');
-  } catch (error) {
-    console.error('Failed to save cookies:', error)
-  }
-}
 
 app.whenReady().then(() => {
   createWindow()
