@@ -31,7 +31,7 @@ async function saveCookies() {
 }
 
 function createWindow() {
-  const win = new BrowserWindow({
+  const mainWidow = new BrowserWindow({
     width: 1200,
     height: 600,
     webPreferences: {
@@ -39,7 +39,9 @@ function createWindow() {
       contextIsolation: false,
     },
   })
-  win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
+  mainWidow.loadFile(path.join(__dirname, '..', 'dist', 'index.html'))
+  const userAgent = mainWidow.webContents.getUserAgent();
+  console.log(userAgent); // 例如：Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...
   saveCookies()
 }
 
